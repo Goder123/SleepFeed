@@ -1,68 +1,54 @@
-const events = [
-  {
-    icon: "🍼",
-    title: "Покормил",
-    time: "15:45",
-    ago: "38 минут назад",
-  },
-  {
-    icon: "☀️",
-    title: "Проснулся",
-    time: "15:37",
-    ago: "46 минут назад",
-  },
-  {
-    icon: "🌙",
-    title: "Уснул",
-    time: "14:32",
-    ago: "1 час 51 мин назад",
-  },
-];
+import { Moon, Sun, Baby } from "lucide-react";
+import { useBabyStore } from "../store/babyStore";
+import { formatClock } from "../shared/lib/time";
 
 export default function Timeline() {
+  const events = useBabyStore((state) => state.events);
+
   return (
     <section className="mt-8">
       <h2 className="text-2xl font-bold mb-4">
-        Сегодня
+        История
       </h2>
 
-      <div className="space-y-4">
-        {events.map((event, index) => (
-          <div
-            key={index}
-            className="
-              bg-slate-900
-              rounded-[28px]
-              p-5
-              shadow-md
-              transition
-              hover:bg-slate-800
-            "
-          >
-            <div className="flex justify-between items-center">
-              <div>
-                <div className="text-xl font-semibold">
-                  {event.icon} {event.title}
+      {events.length === 0 ? (
+        <div className="bg-slate-900 rounded-[28px] p-6 text-center text-slate-400">
+          Пока нет событий
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {events.map((event) => (
+            <div
+              key={event.id}
+              className="bg-slate-900 rounded-[28px] p-5 shadow-md"
+            >
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  {event.type === "sleep" && (
+                    <Moon className="text-indigo-400" />
+                  )}
+
+                  {event.type === "wake" && (
+                    <Sun className="text-yellow-400" />
+                  )}
+
+                  {event.type === "feed" && (
+                    <Baby className="text-emerald-400" />
+                  )}
+
+                  <span className="font-semibold">
+                    {event.title}
+                  </span>
                 </div>
 
-                <div className="text-slate-400 mt-2 text-sm">
-                  Сегодня
-                </div>
-              </div>
-
-              <div className="text-right">
-                <div className="font-bold text-lg">
-                  {event.time}
-                </div>
-
-                <div className="text-slate-400 text-sm mt-2">
-                  {event.ago}
-                </div>
+                <span className="font-bold">
+                  {formatClock(event.timestamp)}
+                </span>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
