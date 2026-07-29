@@ -1,28 +1,10 @@
-import { Moon, Sun, Baby } from "lucide-react";
+import { Baby, Moon, Sun } from "lucide-react";
 
-import useNow from "../shared/hooks/useNow";
-import { useBabyStore } from "../store/babyStore";
+import useTodayStats from "../shared/hooks/useTodayStats";
 import { formatDuration } from "../shared/lib/time";
-import {
-  calculateTodaySleep,
-  calculateTodayAwake,
-  calculateTodayFeeds,
-} from "../shared/lib/statistics";
 
 export default function TodayStatsCard() {
-  const now = useNow();
-
-  const sleepSessions = useBabyStore((state) => state.sleepSessions);
-  const awakeSessions = useBabyStore((state) => state.awakeSessions);
-  const events = useBabyStore((state) => state.events);
-
-  const todaySleep = calculateTodaySleep(sleepSessions, now);
-
-  const todayAwake = calculateTodayAwake(awakeSessions, now);
-
-  const todayFeeds = calculateTodayFeeds(
-    events.filter((event) => event.type === "feed").length
-  );
+  const { todaySleep, todayAwake, todayFeeds } = useTodayStats();
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
