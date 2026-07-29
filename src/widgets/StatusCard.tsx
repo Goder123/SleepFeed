@@ -1,19 +1,25 @@
 import { Moon, Sun } from "lucide-react";
+
 import { useBabyStore } from "../store/babyStore";
+import useNow from "../shared/hooks/useNow";
 import { formatClock, formatDuration } from "../shared/lib/time";
-import { useNow } from "../shared/hooks/useNow";
 
 export default function StatusCard() {
   const status = useBabyStore((state) => state.status);
+
   const sleepStartedAt = useBabyStore((state) => state.sleepStartedAt);
+
+  const awakeStartedAt = useBabyStore((state) => state.awakeStartedAt);
 
   const now = useNow();
 
   const sleeping = status === "sleeping";
 
+  const startedAt = sleeping ? sleepStartedAt : awakeStartedAt;
+
   const duration =
-    sleeping && sleepStartedAt
-      ? formatDuration(now - sleepStartedAt)
+    startedAt !== null
+      ? formatDuration(now - startedAt)
       : "00:00:00";
 
   return (
@@ -33,16 +39,14 @@ export default function StatusCard() {
           {sleeping ? "Спит" : "Бодрствует"}
         </h2>
 
-        {sleeping && (
-          <div className="text-5xl font-bold mt-6 text-indigo-300">
-            {duration}
-          </div>
-        )}
+        <div className="text-5xl font-bold mt-6">
+          {duration}
+        </div>
 
         <div className="text-slate-400 mt-4">
-          {sleeping && sleepStartedAt
-            ? `С ${formatClock(sleepStartedAt)}`
-            : "Ребенок не спит"}
+          {startedAt
+            ? `С ${formatClock(startedAt)}`
+            : "—"}
         </div>
       </div>
     </section>

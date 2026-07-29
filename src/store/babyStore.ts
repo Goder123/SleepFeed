@@ -1,24 +1,27 @@
 import { create } from "zustand";
 
-export type BabyStatus = "awake" | "sleeping";
+import type {
+  BabyStatus,
+  SleepSession,
+  AwakeSession,
+} from "../shared/types/baby";
 
-export type EventType = "sleep" | "wake" | "feed";
-
-export interface BabyEvent {
-  id: number;
-  type: EventType;
-  title: string;
-  timestamp: number;
-}
+import type { BabyEvent } from "../shared/types/events";
 
 interface BabyState {
   status: BabyStatus;
 
   sleepStartedAt: number | null;
 
+  awakeStartedAt: number | null;
+
   lastFeedAt: number | null;
 
   events: BabyEvent[];
+
+  sleepSessions: SleepSession[];
+
+  awakeSessions: AwakeSession[];
 
   startSleep: () => void;
 
@@ -32,16 +35,50 @@ export const useBabyStore = create<BabyState>((set) => ({
 
   sleepStartedAt: null,
 
+  awakeStartedAt: Date.now(),
+
   lastFeedAt: null,
 
   events: [],
+
+  sleepSessions: [],
+
+  awakeSessions: [
+    {
+      id: Date.now(),
+      startedAt: Date.now(),
+      endedAt: null,
+    },
+  ],
 
   startSleep: () => {
     const now = Date.now();
 
     set((state) => ({
       status: "sleeping",
+
       sleepStartedAt: now,
+
+      awakeStartedAt: null,
+
+      awakeSessions: state.awakeSessions.map((session) =>
+        session.endedAt === null
+          ? {
+              ...session,
+              endedAt: now,
+            }
+          : session
+      ),
+
+      sleepSessions: [
+        {
+          id: now,
+          startedAt: now,
+          endedAt: null,
+        },
+        ...state.sleepSessions,
+      ],
+
       events: [
         {
           id: now,
@@ -59,7 +96,29 @@ export const useBabyStore = create<BabyState>((set) => ({
 
     set((state) => ({
       status: "awake",
+
       sleepStartedAt: null,
+
+      awakeStartedAt: now,
+
+      sleepSessions: state.sleepSessions.map((session) =>
+        session.endedAt === null
+          ? {
+              ...session,
+              endedAt: now,
+            }
+          : session
+      ),
+
+      awakeSessions: [
+        {
+          id: now,
+          startedAt: now,
+          endedAt: null,
+        },
+        ...state.awakeSessions,
+      ],
+
       events: [
         {
           id: now,
@@ -77,6 +136,7 @@ export const useBabyStore = create<BabyState>((set) => ({
 
     set((state) => ({
       lastFeedAt: now,
+
       events: [
         {
           id: now,
