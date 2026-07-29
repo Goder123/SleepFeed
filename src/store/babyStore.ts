@@ -8,6 +8,7 @@ import type {
 } from "../shared/types/baby";
 
 import type { BabyEvent } from "../shared/types/events";
+import type { BabyProfile } from "../shared/types/profile";
 
 interface BabyState {
   status: BabyStatus;
@@ -17,6 +18,8 @@ interface BabyState {
   awakeStartedAt: number | null;
 
   lastFeedAt: number | null;
+
+  profile: BabyProfile;
 
   events: BabyEvent[];
 
@@ -31,6 +34,8 @@ interface BabyState {
   feed: () => void;
 
   deleteEvent: (id: number) => void;
+
+  updateProfile: (data: Partial<BabyProfile>) => void;
 }
 
 export const useBabyStore = create<BabyState>()(
@@ -43,6 +48,12 @@ export const useBabyStore = create<BabyState>()(
       awakeStartedAt: Date.now(),
 
       lastFeedAt: null,
+
+      profile: {
+        name: "",
+        birthDate: "",
+        gender: null,
+      },
 
       events: [],
 
@@ -157,6 +168,15 @@ export const useBabyStore = create<BabyState>()(
       deleteEvent: (id: number) => {
         set((state) => ({
           events: state.events.filter((event) => event.id !== id),
+        }));
+      },
+
+      updateProfile: (data) => {
+        set((state) => ({
+          profile: {
+            ...state.profile,
+            ...data,
+          },
         }));
       },
     }),

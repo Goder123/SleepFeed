@@ -1,3 +1,5 @@
+import Header from "../shared/ui/Header";
+
 import StatusCard from "../widgets/StatusCard";
 import ActionButtons from "../widgets/ActionButtons";
 import LastFeedCard from "../widgets/LastFeedCard";
@@ -6,16 +8,20 @@ import Timeline from "../widgets/Timeline";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-slate-950 text-white p-5 max-w-[430px] mx-auto space-y-4">
-      <StatusCard />
+    <main className="min-h-screen bg-slate-950 text-white max-w-[430px] mx-auto">
+      <Header title="SleepFeed" />
 
-      <ActionButtons />
+      <div className="space-y-4 p-5">
+        <StatusCard />
 
-      <LastFeedCard />
+        <ActionButtons />
 
-      <TodayStatsCard />
+        <LastFeedCard />
 
-      <Timeline />
+        <TodayStatsCard />
+
+        <Timeline />
+      </div>
     </main>
   );
 }
