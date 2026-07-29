@@ -29,6 +29,8 @@ interface BabyState {
   wakeUp: () => void;
 
   feed: () => void;
+
+  deleteEvent: (id: number) => void;
 }
 
 export const useBabyStore = create<BabyState>()(
@@ -149,6 +151,12 @@ export const useBabyStore = create<BabyState>()(
             },
             ...state.events,
           ],
+        }));
+      },
+
+      deleteEvent: (id: number) => {
+        set((state) => ({
+          events: state.events.filter((event) => event.id !== id),
         }));
       },
     }),
