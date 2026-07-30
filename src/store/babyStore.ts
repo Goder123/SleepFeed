@@ -52,6 +52,16 @@ function buildStateFromEvents(
     (session) => session.endedAt === null
   );
 
+  const openAwake = awakeSessions.find(
+    (session) => session.endedAt === null
+  );
+  console.log("BUILD STATE", {
+  openSleep,
+  openAwake,
+  sleepSessions,
+  awakeSessions,
+});
+
   if (openSleep) {
     return {
       status: "sleeping",
@@ -62,11 +72,11 @@ function buildStateFromEvents(
     };
   }
 
-  const openAwake = awakeSessions.find(
-    (session) => session.endedAt === null
-  );
+  
+  
+  
 
-  return {
+return {
     status: "awake",
     sleepStartedAt: null,
     awakeStartedAt: openAwake?.startedAt ?? now,
@@ -98,25 +108,31 @@ export const useBabyStore = create<BabyState>()(
       awakeSessions: [],
 
       startSleep: () => {
-        const now = Date.now();
+  
 
-        set((state) => {
-          const events: BabyEvent[] = [
-            {
-              id: now,
-              type: "sleep",
-              title: "Уснул",
-              timestamp: now,
-            },
-            ...state.events,
-          ];
+  const now = Date.now();
 
-          return {
-            events,
-            ...buildStateFromEvents(events, now),
-          };
-        });
+  set((state) => {
+    
+
+    const events: BabyEvent[] = [
+      {
+        id: now,
+        type: "sleep",
+        title: "Уснул",
+        timestamp: now,
       },
+      ...state.events,
+    ];
+
+
+    return {
+      events,
+      ...buildStateFromEvents(events, now),
+    };
+  });
+},
+      
             wakeUp: () => {
         const now = Date.now();
 
@@ -131,10 +147,11 @@ export const useBabyStore = create<BabyState>()(
             ...state.events,
           ];
 
-          return {
-            events,
-            ...buildStateFromEvents(events, now),
-          };
+          const result = {
+  events,
+  ...buildStateFromEvents(events, now),
+};
+return result;
         });
       },
 

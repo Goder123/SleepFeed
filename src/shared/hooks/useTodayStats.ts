@@ -10,7 +10,9 @@ export default function useTodayStats() {
   const now = useNow();
 
   const sleepSessions = useBabyStore((state) => state.sleepSessions);
-  const awakeSessions = useBabyStore((state) => state.awakeSessions);
+  const awakeSessions = useBabyStore(
+  (state) => state.awakeSessions
+);
   const events = useBabyStore((state) => state.events);
 
   const todaySleep = calculateTodaySleep(sleepSessions, now);

@@ -27,27 +27,21 @@ export default function TodayStatRow({
   onAdd,
 }: TodayStatRowProps) {
   return (
-    <div className="grid grid-cols-[1fr_auto_auto] items-center gap-4 rounded-2xl bg-slate-50 p-4">
-      <div className="flex min-w-0 items-center gap-3">
+    <div className="rounded-2xl bg-slate-50 p-4">
+      <div className="flex items-center gap-3">
         <Icon
           size={22}
           className={`shrink-0 ${iconColor}`}
         />
 
-        <span className="font-medium text-slate-900">
+        <span className="flex-1 font-medium text-slate-900">
           {label}
         </span>
-      </div>
 
-      <span className="whitespace-nowrap font-mono text-lg font-bold text-slate-900">
-        {value}
-      </span>
-
-      <div className="flex items-center gap-1">
         <button
           type="button"
           onClick={() => onEdit?.(type)}
-          className="rounded-full p-2 text-slate-500 transition hover:bg-slate-200 hover:text-slate-900"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-200 hover:text-slate-900"
           title={editTitle}
         >
           <Pencil size={16} />
@@ -56,11 +50,17 @@ export default function TodayStatRow({
         <button
           type="button"
           onClick={() => onAdd?.(type)}
-          className="rounded-full p-2 text-slate-500 transition hover:bg-slate-200 hover:text-slate-900"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-200 hover:text-slate-900"
           title={addTitle}
         >
           <Plus size={16} />
         </button>
+      </div>
+
+      <div className="mt-3 pl-[34px]">
+        <span className="font-mono text-2xl font-bold text-slate-900">
+          {value}
+        </span>
       </div>
     </div>
   );

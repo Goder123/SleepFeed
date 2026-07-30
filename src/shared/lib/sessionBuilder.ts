@@ -22,80 +22,77 @@ export function rebuildSessions(
   const awakeSessions: AwakeSession[] = [];
 
   let currentSleep: SleepSession | null = null;
-  let currentAwake: AwakeSession | null = null;
-
-  let status: "awake" | "sleeping" = "awake";
-
-  if (sortedEvents.length === 0) {
-    awakeSessions.push({
-      id: now,
-      startedAt: now,
-      endedAt: null,
-    });
-
-    return {
-      sleepSessions,
-      awakeSessions,
-    };
-  }
-
-  currentAwake = {
-    id: sortedEvents[0].timestamp,
-    startedAt: sortedEvents[0].timestamp,
+  let currentAwake: AwakeSession = {
+    id: 0,
+    startedAt:
+      sortedEvents.length > 0 ? sortedEvents[0].timestamp : now,
     endedAt: null,
   };
-
-  awakeSessions.push(currentAwake);
 
   for (const event of sortedEvents) {
     switch (event.type) {
       case "sleep": {
-        if (status === "awake" && currentAwake) {
+        // Закрываем бодрствование, если оно открыто
+        if (currentAwake.endedAt === null) {
           currentAwake.endedAt = event.timestamp;
+
+          if (
+            currentAwake.startedAt <
+            currentAwake.endedAt
+          ) {
+            awakeSessions.push(currentAwake);
+          }
         }
 
+        // Если уже есть открытый сон — заменяем его
         currentSleep = {
           id: event.id,
           startedAt: event.timestamp,
           endedAt: null,
         };
 
-        sleepSessions.push(currentSleep);
-
-        status = "sleeping";
-
         break;
       }
 
       case "wake": {
-        if (status === "sleeping" && currentSleep) {
+        // Закрываем сон
+        if (currentSleep) {
           currentSleep.endedAt = event.timestamp;
+
+          if (
+            currentSleep.startedAt <
+            currentSleep.endedAt
+          ) {
+            sleepSessions.push(currentSleep);
+          }
+
+          currentSleep = null;
         }
 
+        // Начинаем новое бодрствование
         currentAwake = {
           id: event.id,
           startedAt: event.timestamp,
           endedAt: null,
         };
 
-        awakeSessions.push(currentAwake);
-
-        status = "awake";
-
         break;
       }
 
-      default:
+      case "feed":
         break;
     }
   }
 
-  if (status === "sleeping" && currentSleep) {
-    currentSleep.endedAt = null;
+  if (currentSleep) {
+    sleepSessions.push(currentSleep);
   }
 
-  if (status === "awake" && currentAwake) {
-    currentAwake.endedAt = null;
+  if (
+    currentAwake &&
+    currentAwake.endedAt === null
+  ) {
+    awakeSessions.push(currentAwake);
   }
 
   return {

@@ -12,7 +12,6 @@ export default function useStatusCard() {
   const sleeping = status === "sleeping";
 
   const startedAt = sleeping ? sleepStartedAt : awakeStartedAt;
-
   const duration =
     startedAt !== null
       ? formatDuration(now - startedAt)
