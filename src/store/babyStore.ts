@@ -1,10 +1,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import { rebuildSessions } from "../shared/lib/sessionBuilder";
+
 import type {
+  AwakeSession,
   BabyStatus,
   SleepSession,
-  AwakeSession,
 } from "../shared/types/baby";
 
 import type { BabyEvent } from "../shared/types/events";
@@ -14,9 +16,7 @@ interface BabyState {
   status: BabyStatus;
 
   sleepStartedAt: number | null;
-
   awakeStartedAt: number | null;
-
   lastFeedAt: number | null;
 
   profile: BabyProfile;
@@ -24,18 +24,55 @@ interface BabyState {
   events: BabyEvent[];
 
   sleepSessions: SleepSession[];
-
   awakeSessions: AwakeSession[];
 
   startSleep: () => void;
-
   wakeUp: () => void;
-
   feed: () => void;
 
   deleteEvent: (id: number) => void;
 
   updateProfile: (data: Partial<BabyProfile>) => void;
+}
+
+function buildStateFromEvents(
+  events: BabyEvent[],
+  now: number
+): Pick<
+  BabyState,
+  | "status"
+  | "sleepStartedAt"
+  | "awakeStartedAt"
+  | "sleepSessions"
+  | "awakeSessions"
+> {
+  const { sleepSessions, awakeSessions } = rebuildSessions(events, now);
+
+  const openSleep = sleepSessions.find(
+    (session) => session.endedAt === null
+  );
+
+  if (openSleep) {
+    return {
+      status: "sleeping",
+      sleepStartedAt: openSleep.startedAt,
+      awakeStartedAt: null,
+      sleepSessions,
+      awakeSessions,
+    };
+  }
+
+  const openAwake = awakeSessions.find(
+    (session) => session.endedAt === null
+  );
+
+  return {
+    status: "awake",
+    sleepStartedAt: null,
+    awakeStartedAt: openAwake?.startedAt ?? now,
+    sleepSessions,
+    awakeSessions,
+  };
 }
 
 export const useBabyStore = create<BabyState>()(
@@ -44,7 +81,6 @@ export const useBabyStore = create<BabyState>()(
       status: "awake",
 
       sleepStartedAt: null,
-
       awakeStartedAt: Date.now(),
 
       lastFeedAt: null,
@@ -59,43 +95,13 @@ export const useBabyStore = create<BabyState>()(
 
       sleepSessions: [],
 
-      awakeSessions: [
-        {
-          id: Date.now(),
-          startedAt: Date.now(),
-          endedAt: null,
-        },
-      ],
+      awakeSessions: [],
 
       startSleep: () => {
         const now = Date.now();
 
-        set((state) => ({
-          status: "sleeping",
-
-          sleepStartedAt: now,
-
-          awakeStartedAt: null,
-
-          awakeSessions: state.awakeSessions.map((session) =>
-            session.endedAt === null
-              ? {
-                  ...session,
-                  endedAt: now,
-                }
-              : session
-          ),
-
-          sleepSessions: [
-            {
-              id: now,
-              startedAt: now,
-              endedAt: null,
-            },
-            ...state.sleepSessions,
-          ],
-
-          events: [
+        set((state) => {
+          const events: BabyEvent[] = [
             {
               id: now,
               type: "sleep",
@@ -103,39 +109,19 @@ export const useBabyStore = create<BabyState>()(
               timestamp: now,
             },
             ...state.events,
-          ],
-        }));
-      },
+          ];
 
-      wakeUp: () => {
+          return {
+            events,
+            ...buildStateFromEvents(events, now),
+          };
+        });
+      },
+            wakeUp: () => {
         const now = Date.now();
 
-        set((state) => ({
-          status: "awake",
-
-          sleepStartedAt: null,
-
-          awakeStartedAt: now,
-
-          sleepSessions: state.sleepSessions.map((session) =>
-            session.endedAt === null
-              ? {
-                  ...session,
-                  endedAt: now,
-                }
-              : session
-          ),
-
-          awakeSessions: [
-            {
-              id: now,
-              startedAt: now,
-              endedAt: null,
-            },
-            ...state.awakeSessions,
-          ],
-
-          events: [
+        set((state) => {
+          const events: BabyEvent[] = [
             {
               id: now,
               type: "wake",
@@ -143,8 +129,13 @@ export const useBabyStore = create<BabyState>()(
               timestamp: now,
             },
             ...state.events,
-          ],
-        }));
+          ];
+
+          return {
+            events,
+            ...buildStateFromEvents(events, now),
+          };
+        });
       },
 
       feed: () => {
@@ -166,9 +157,18 @@ export const useBabyStore = create<BabyState>()(
       },
 
       deleteEvent: (id: number) => {
-        set((state) => ({
-          events: state.events.filter((event) => event.id !== id),
-        }));
+        set((state) => {
+          const now = Date.now();
+
+          const events = state.events.filter(
+            (event) => event.id !== id
+          );
+
+          return {
+            events,
+            ...buildStateFromEvents(events, now),
+          };
+        });
       },
 
       updateProfile: (data) => {
@@ -182,6 +182,22 @@ export const useBabyStore = create<BabyState>()(
     }),
     {
       name: "sleepfeed",
+
+      partialize: (state) => ({
+        status: state.status,
+
+        sleepStartedAt: state.sleepStartedAt,
+        awakeStartedAt: state.awakeStartedAt,
+
+        lastFeedAt: state.lastFeedAt,
+
+        profile: state.profile,
+
+        events: state.events,
+
+        sleepSessions: state.sleepSessions,
+        awakeSessions: state.awakeSessions,
+      }),
     }
   )
 );

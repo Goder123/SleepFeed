@@ -12,10 +12,8 @@ export function useBabyProfile() {
   );
 
   const hasProfile =
-    profile.name.trim() !== "" &&
-    profile.birthDate !== "" &&
-    profile.gender !== null;
-
+  profile.name.trim() !== "" &&
+  profile.birthDate.trim() !== "";
   return {
     profile,
     age,

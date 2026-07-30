@@ -1,36 +1,59 @@
 export function getBabyAge(birthDate: string): string {
-  if (!birthDate) {
-    return "";
-  }
-
   const birth = new Date(birthDate);
   const today = new Date();
 
-  let months =
-    (today.getFullYear() - birth.getFullYear()) * 12 +
-    (today.getMonth() - birth.getMonth());
-
+  let years = today.getFullYear() - birth.getFullYear();
+  let months = today.getMonth() - birth.getMonth();
   let days = today.getDate() - birth.getDate();
 
   if (days < 0) {
     months--;
-
-    const previousMonth = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      0
-    );
-
-    days += previousMonth.getDate();
   }
 
   if (months < 0) {
-    return "";
+    years--;
+    months += 12;
+  }
+
+  const diffMs = today.getTime() - birth.getTime();
+  const totalDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (years === 0 && months === 0) {
+    return `${totalDays} ${plural(totalDays, "день", "дня", "дней")}`;
+  }
+
+  if (years === 0) {
+    return `${months} ${plural(months, "месяц", "месяца", "месяцев")}`;
   }
 
   if (months === 0) {
-    return `${days} дн.`;
+    return `${years} ${plural(years, "год", "года", "лет")}`;
   }
 
-  return `${months} мес. ${days} дн.`;
+  return `${years} ${plural(years, "год", "года", "лет")} ${months} ${plural(
+    months,
+    "месяц",
+    "месяца",
+    "месяцев"
+  )}`;
+}
+
+function plural(
+  value: number,
+  one: string,
+  few: string,
+  many: string
+): string {
+  const mod10 = value % 10;
+  const mod100 = value % 100;
+
+  if (mod10 === 1 && mod100 !== 11) {
+    return one;
+  }
+
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) {
+    return few;
+  }
+
+  return many;
 }
