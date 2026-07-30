@@ -26,7 +26,7 @@ export function calculateTodaySleep(
     const end = session.endedAt ?? now;
 
     if (end > dayStart) {
-      total += end - start;
+      total += Math.max(0, end - start);
     }
   }
 
@@ -46,7 +46,7 @@ export function calculateTodayAwake(
     const end = session.endedAt ?? now;
 
     if (end > dayStart) {
-      total += end - start;
+      total += Math.max(0, end - start);
     }
   }
 

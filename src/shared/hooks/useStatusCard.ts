@@ -13,9 +13,9 @@ export default function useStatusCard() {
 
   const startedAt = sleeping ? sleepStartedAt : awakeStartedAt;
   const duration =
-    startedAt !== null
-      ? formatDuration(now - startedAt)
-      : "00:00:00";
+  startedAt !== null
+    ? formatDuration(Math.max(0, now - startedAt))
+    : "00:00:00";
 
   return {
     sleeping,

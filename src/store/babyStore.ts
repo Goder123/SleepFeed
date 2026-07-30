@@ -55,12 +55,7 @@ function buildStateFromEvents(
   const openAwake = awakeSessions.find(
     (session) => session.endedAt === null
   );
-  console.log("BUILD STATE", {
-  openSleep,
-  openAwake,
-  sleepSessions,
-  awakeSessions,
-});
+  
 
   if (openSleep) {
     return {
