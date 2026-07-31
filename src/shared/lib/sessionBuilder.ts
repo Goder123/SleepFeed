@@ -1,7 +1,4 @@
-import type {
-  AwakeSession,
-  SleepSession,
-} from "../types/baby";
+import type { AwakeSession, SleepSession } from "../types/baby";
 import type { BabyEvent } from "../types/events";
 
 interface SessionResult {
@@ -11,12 +8,8 @@ interface SessionResult {
 
 const MIN_DURATION = 1000;
 
-export function rebuildSessions(
-  events: BabyEvent[],
-): SessionResult {
-  const sortedEvents = [...events].sort(
-    (a, b) => a.timestamp - b.timestamp,
-  );
+export function rebuildSessions(events: BabyEvent[]): SessionResult {
+  const sortedEvents = [...events].sort((a, b) => a.timestamp - b.timestamp);
 
   const sleepSessions: SleepSession[] = [];
   const awakeSessions: AwakeSession[] = [];
@@ -34,8 +27,7 @@ export function rebuildSessions(
 
         // Закрываем бодрствование
         if (currentAwake) {
-          const duration =
-            event.timestamp - currentAwake.startedAt;
+          const duration = event.timestamp - currentAwake.startedAt;
 
           if (duration >= MIN_DURATION) {
             currentAwake.endedAt = event.timestamp;
@@ -48,6 +40,8 @@ export function rebuildSessions(
 
         currentSleep = {
           id: event.id,
+          type: "sleep",
+          title: event.title,
           startedAt: event.timestamp,
           endedAt: null,
         };
@@ -63,8 +57,7 @@ export function rebuildSessions(
 
         // Закрываем сон
         if (currentSleep) {
-          const duration =
-            event.timestamp - currentSleep.startedAt;
+          const duration = event.timestamp - currentSleep.startedAt;
 
           if (duration >= MIN_DURATION) {
             currentSleep.endedAt = event.timestamp;
@@ -77,6 +70,8 @@ export function rebuildSessions(
 
         currentAwake = {
           id: event.id,
+          type: "awake",
+          title: event.title,
           startedAt: event.timestamp,
           endedAt: null,
         };

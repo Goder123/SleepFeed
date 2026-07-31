@@ -1,106 +1,61 @@
 import type {
-  BabyEvent,
   TimelineDay,
   TimelineItem,
+  BabyEvent,
 } from "../types/events";
+
+import type {
+  SleepSession,
+  AwakeSession,
+} from "../types/baby";
 
 function getDateKey(timestamp: number): string {
   return new Date(timestamp).toISOString().slice(0, 10);
 }
 
-const MIN_DURATION = 1000;
-
 export function buildTimeline(
-  events: BabyEvent[]
+  events: BabyEvent[],
+  sleepSessions: SleepSession[],
+  awakeSessions: AwakeSession[],
 ): TimelineDay[] {
-  const sortedEvents = [...events].sort(
-    (a, b) => a.timestamp - b.timestamp
-  );
-
   const items: TimelineItem[] = [];
 
-  let currentSleep: TimelineItem | null = null;
-  let currentAwake: TimelineItem | null = null;
-
-  for (const event of sortedEvents) {
-    switch (event.type) {
-      case "feed": {
-        items.push({
-          id: event.id,
-          type: "feed",
-          title: event.title,
-          start: event.timestamp,
-        });
-
-        break;
-      }
-
-      case "sleep": {
-        // Уже спит — повторное событие игнорируем
-        if (currentSleep) {
-          break;
-        }
-
-        // Закрываем бодрствование
-        if (currentAwake) {
-          const duration =
-            event.timestamp - currentAwake.start;
-
-          if (duration >= MIN_DURATION) {
-            currentAwake.end = event.timestamp;
-            currentAwake.duration = duration;
-          } else {
-            items.splice(items.indexOf(currentAwake), 1);
-          }
-
-          currentAwake = null;
-        }
-
-        currentSleep = {
-          id: event.id,
-          type: "sleep",
-          title: event.title,
-          start: event.timestamp,
-        };
-
-        items.push(currentSleep);
-
-        break;
-      }
-
-      case "wake": {
-        // Уже бодрствует — повторное событие игнорируем
-        if (currentAwake) {
-          break;
-        }
-
-        // Закрываем сон
-        if (currentSleep) {
-          const duration =
-            event.timestamp - currentSleep.start;
-
-          if (duration >= MIN_DURATION) {
-            currentSleep.end = event.timestamp;
-            currentSleep.duration = duration;
-          } else {
-            items.splice(items.indexOf(currentSleep), 1);
-          }
-
-          currentSleep = null;
-        }
-
-        currentAwake = {
-          id: event.id,
-          type: "awake",
-          title: event.title,
-          start: event.timestamp,
-        };
-
-        items.push(currentAwake);
-
-        break;
-      }
+  // Кормления
+  for (const event of events) {
+    if (event.type !== "feed") {
+      continue;
     }
+
+    items.push({
+      id: event.id,
+      type: "feed",
+      title: event.title,
+      start: event.timestamp,
+    });
+  }
+
+  // Сон
+  for (const session of sleepSessions) {
+    items.push({
+      id: session.id,
+      type: session.type,
+      title: session.title,
+      start: session.startedAt,
+      end: session.endedAt ?? undefined,
+      duration: session.duration,
+    });
+  }
+
+  // Бодрствование
+  for (const session of awakeSessions) {
+    items.push({
+      id: session.id,
+      type: session.type,
+      title: session.title,
+      start: session.startedAt,
+      end: session.endedAt ?? undefined,
+      duration: session.duration,
+    });
   }
 
   items.sort((a, b) => b.start - a.start);
@@ -119,10 +74,8 @@ export function buildTimeline(
     }
   }
 
-  return Array.from(grouped.entries()).map(
-    ([date, items]) => ({
-      date,
-      items,
-    })
-  );
+  return Array.from(grouped.entries()).map(([date, items]) => ({
+    date,
+    items,
+  }));
 }

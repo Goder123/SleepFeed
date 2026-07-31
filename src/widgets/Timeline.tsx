@@ -7,8 +7,14 @@ import TimelineItemCard from "./TimelineItemCard";
 
 export default function Timeline() {
   const events = useBabyStore((state) => state.events);
+  const sleepSessions = useBabyStore((state) => state.sleepSessions);
+  const awakeSessions = useBabyStore((state) => state.awakeSessions);
 
-  const timeline = buildTimeline(events);
+  const timeline = buildTimeline(
+    events,
+    sleepSessions,
+    awakeSessions,
+  );
 
   const latestItems = timeline
     .flatMap((day) => day.items)
