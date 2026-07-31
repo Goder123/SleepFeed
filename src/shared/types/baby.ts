@@ -6,6 +6,8 @@ export interface SleepSession {
   startedAt: number;
 
   endedAt: number | null;
+
+  duration?: number;
 }
 
 export interface AwakeSession {
@@ -14,6 +16,8 @@ export interface AwakeSession {
   startedAt: number;
 
   endedAt: number | null;
+
+  duration?: number;
 }
 
 export interface FeedEvent {

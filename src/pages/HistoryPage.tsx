@@ -1,19 +1,26 @@
 import { useState } from "react";
 
 import Header from "../shared/ui/Header";
+import { buildTimeline } from "../shared/lib/timeline";
 import { useBabyStore } from "../store/babyStore";
 
-import HistoryEventCard from "../widgets/HistoryEventCard";
+import TimelineItemCard from "../widgets/TimelineItemCard";
 import AddEventButton from "../widgets/AddEventButton";
 import AddEditEventModal from "../widgets/AddEditEventModal";
 
 export default function HistoryPage() {
+  console.log("HistoryPage rendered");
+
   const events = useBabyStore((state) => state.events);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const sortedEvents = [...events].sort(
-    (a, b) => b.timestamp - a.timestamp
+  const timeline = buildTimeline(events);
+  console.log("EVENTS", events);
+console.log("TIMELINE", timeline);
+
+  const hasItems = timeline.some(
+    (day) => day.items.length > 0
   );
 
   return (
@@ -30,24 +37,34 @@ export default function HistoryPage() {
 
         <AddEventButton
           onClick={() => {
-             console.log("Кнопка нажата");
-                setIsModalOpen(true);
-            }}
+            setIsModalOpen(true);
+          }}
         />
 
-        {sortedEvents.length === 0 ? (
+        {!hasItems ? (
           <div className="rounded-[24px] border border-slate-800 bg-slate-900 p-8 text-center">
             <p className="text-slate-400">
               Пока нет событий
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {sortedEvents.map((event) => (
-              <HistoryEventCard
-                key={event.id}
-                event={event}
-              />
+          <div className="space-y-6">
+            {timeline.map((day) => (
+              <section
+                key={day.date}
+                className="space-y-3"
+              >
+                <h3 className="px-1 text-sm font-semibold uppercase tracking-wide text-slate-400">
+                  {day.date}
+                </h3>
+
+                {day.items.map((item) => (
+                  <TimelineItemCard
+                    key={item.id}
+                    item={item}
+                  />
+                ))}
+              </section>
             ))}
           </div>
         )}

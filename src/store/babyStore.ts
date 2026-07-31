@@ -39,7 +39,6 @@ interface BabyState {
 
 function buildStateFromEvents(
   events: BabyEvent[],
-  now: number,
 ): Pick<
   BabyState,
   | "status"
@@ -48,7 +47,7 @@ function buildStateFromEvents(
   | "sleepSessions"
   | "awakeSessions"
 > {
-  const { sleepSessions, awakeSessions } = rebuildSessions(events, now);
+  const { sleepSessions, awakeSessions } = rebuildSessions(events);
 
   const openSleep = sleepSessions.find((session) => session.endedAt === null);
   const openAwake = awakeSessions.find((session) => session.endedAt === null);
@@ -81,6 +80,18 @@ function buildStateFromEvents(
     awakeSessions,
   };
 }
+function createEvent(
+  type: BabyEvent["type"],
+  title: string,
+  timestamp: number,
+): BabyEvent {
+  return {
+    id: timestamp,
+    type,
+    title,
+    timestamp,
+  };
+}
 
 export const useBabyStore = create<BabyState>()(
   persist(
@@ -108,19 +119,15 @@ export const useBabyStore = create<BabyState>()(
         const now = Date.now();
 
         set((state) => {
-          const events: BabyEvent[] = [
-            {
-              id: now,
-              type: "sleep",
-              title: "Уснул",
-              timestamp: now,
-            },
-            ...state.events,
-          ];
+          if (state.status === "sleeping") {
+            return state;
+          }
+
+          const events = [createEvent("sleep", "Уснул", now), ...state.events];
 
           return {
             events,
-            ...buildStateFromEvents(events, now),
+            ...buildStateFromEvents(events),
           };
         });
       },
@@ -129,19 +136,18 @@ export const useBabyStore = create<BabyState>()(
         const now = Date.now();
 
         set((state) => {
-          const events: BabyEvent[] = [
-            {
-              id: now,
-              type: "wake",
-              title: "Проснулся",
-              timestamp: now,
-            },
+          if (state.status === "awake") {
+            return state;
+          }
+
+          const events = [
+            createEvent("wake", "Проснулся", now),
             ...state.events,
           ];
 
           return {
             events,
-            ...buildStateFromEvents(events, now),
+            ...buildStateFromEvents(events),
           };
         });
       },
@@ -151,22 +157,11 @@ export const useBabyStore = create<BabyState>()(
 
         set((state) => ({
           lastFeedAt: now,
-
-          events: [
-            {
-              id: now,
-              type: "feed",
-              title: "Покормил",
-              timestamp: now,
-            },
-            ...state.events,
-          ],
+          events: [createEvent("feed", "Покормил", now), ...state.events],
         }));
       },
       addEvent: (event: BabyEvent) => {
         set((state) => {
-          const now = Date.now();
-
           const events = [event, ...state.events].sort(
             (a, b) => b.timestamp - a.timestamp,
           );
@@ -175,28 +170,24 @@ export const useBabyStore = create<BabyState>()(
             events,
             lastFeedAt:
               event.type === "feed" ? event.timestamp : state.lastFeedAt,
-            ...buildStateFromEvents(events, now),
+            ...buildStateFromEvents(events),
           };
         });
       },
 
       deleteEvent: (id: number) => {
         set((state) => {
-          const now = Date.now();
-
           const events = state.events.filter((event) => event.id !== id);
 
           return {
             events,
-            ...buildStateFromEvents(events, now),
+            ...buildStateFromEvents(events),
           };
         });
       },
 
       updateEvent: (updatedEvent: BabyEvent) => {
         set((state) => {
-          const now = Date.now();
-
           const events = state.events
             .map((event) =>
               event.id === updatedEvent.id ? updatedEvent : event,
@@ -205,7 +196,7 @@ export const useBabyStore = create<BabyState>()(
 
           return {
             events,
-            ...buildStateFromEvents(events, now),
+            ...buildStateFromEvents(events),
           };
         });
       },

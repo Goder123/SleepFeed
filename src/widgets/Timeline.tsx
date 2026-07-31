@@ -1,70 +1,45 @@
-import { Moon, Sun, Baby, Trash2 } from "lucide-react";
+import { Link } from "react-router-dom";
+
+import { buildTimeline } from "../shared/lib/timeline";
 import { useBabyStore } from "../store/babyStore";
-import { formatClock } from "../shared/lib/time";
+
+import TimelineItemCard from "./TimelineItemCard";
 
 export default function Timeline() {
   const events = useBabyStore((state) => state.events);
-  const deleteEvent = useBabyStore((state) => state.deleteEvent);
 
-  const handleDelete = (id: number) => {
-    const confirmed = window.confirm(
-      "Удалить это событие?\n\nЭто действие нельзя отменить."
-    );
+  const timeline = buildTimeline(events);
 
-    if (!confirmed) return;
-
-    deleteEvent(id);
-  };
+  const latestItems = timeline
+    .flatMap((day) => day.items)
+    .slice(0, 5);
 
   return (
     <section className="mt-8">
-      <h2 className="text-2xl font-bold mb-4">История</h2>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-2xl font-bold">
+          История
+        </h2>
 
-      {events.length === 0 ? (
-        <div className="bg-slate-900 rounded-[28px] p-6 text-center text-slate-400">
+        <Link
+          to="/history"
+          className="text-sm font-medium text-indigo-400 transition-colors hover:text-indigo-300"
+        >
+          Все →
+        </Link>
+      </div>
+
+      {latestItems.length === 0 ? (
+        <div className="rounded-[28px] bg-slate-900 p-6 text-center text-slate-400">
           Пока нет событий
         </div>
       ) : (
         <div className="space-y-4">
-          {events.map((event) => (
-            <div
-              key={event.id}
-              className="bg-slate-900 rounded-[28px] p-5 shadow-md hover:bg-slate-800 transition-colors"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {event.type === "sleep" && (
-                    <Moon className="text-indigo-400" size={22} />
-                  )}
-
-                  {event.type === "wake" && (
-                    <Sun className="text-yellow-400" size={22} />
-                  )}
-
-                  {event.type === "feed" && (
-                    <Baby className="text-emerald-400" size={22} />
-                  )}
-
-                  <span className="font-semibold text-white">
-                    {event.title}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <span className="font-bold text-slate-300">
-                    {formatClock(event.timestamp)}
-                  </span>
-
-                  <button
-                    onClick={() => handleDelete(event.id)}
-                    className="rounded-lg p-2 text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all"
-                    title="Удалить событие"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </div>
-              </div>
-            </div>
+          {latestItems.map((item) => (
+            <TimelineItemCard
+              key={item.id}
+              item={item}
+            />
           ))}
         </div>
       )}

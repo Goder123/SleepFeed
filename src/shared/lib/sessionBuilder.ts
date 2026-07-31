@@ -2,7 +2,6 @@ import type {
   AwakeSession,
   SleepSession,
 } from "../types/baby";
-
 import type { BabyEvent } from "../types/events";
 
 interface SessionResult {
@@ -10,41 +9,43 @@ interface SessionResult {
   awakeSessions: AwakeSession[];
 }
 
+const MIN_DURATION = 1000;
+
 export function rebuildSessions(
   events: BabyEvent[],
-  now: number
 ): SessionResult {
   const sortedEvents = [...events].sort(
-    (a, b) => a.timestamp - b.timestamp
+    (a, b) => a.timestamp - b.timestamp,
   );
 
   const sleepSessions: SleepSession[] = [];
   const awakeSessions: AwakeSession[] = [];
 
   let currentSleep: SleepSession | null = null;
-  let currentAwake: AwakeSession = {
-    id: 0,
-    startedAt:
-      sortedEvents.length > 0 ? sortedEvents[0].timestamp : now,
-    endedAt: null,
-  };
+  let currentAwake: AwakeSession | null = null;
 
   for (const event of sortedEvents) {
     switch (event.type) {
       case "sleep": {
-        // Закрываем бодрствование, если оно открыто
-        if (currentAwake.endedAt === null) {
-          currentAwake.endedAt = event.timestamp;
-
-          if (
-            currentAwake.startedAt <
-            currentAwake.endedAt
-          ) {
-            awakeSessions.push(currentAwake);
-          }
+        // Уже спит — повторное событие игнорируем
+        if (currentSleep) {
+          break;
         }
 
-        // Если уже есть открытый сон — заменяем его
+        // Закрываем бодрствование
+        if (currentAwake) {
+          const duration =
+            event.timestamp - currentAwake.startedAt;
+
+          if (duration >= MIN_DURATION) {
+            currentAwake.endedAt = event.timestamp;
+            currentAwake.duration = duration;
+            awakeSessions.push(currentAwake);
+          }
+
+          currentAwake = null;
+        }
+
         currentSleep = {
           id: event.id,
           startedAt: event.timestamp,
@@ -55,21 +56,25 @@ export function rebuildSessions(
       }
 
       case "wake": {
+        // Уже бодрствует — повторное событие игнорируем
+        if (currentAwake) {
+          break;
+        }
+
         // Закрываем сон
         if (currentSleep) {
-          currentSleep.endedAt = event.timestamp;
+          const duration =
+            event.timestamp - currentSleep.startedAt;
 
-          if (
-            currentSleep.startedAt <
-            currentSleep.endedAt
-          ) {
+          if (duration >= MIN_DURATION) {
+            currentSleep.endedAt = event.timestamp;
+            currentSleep.duration = duration;
             sleepSessions.push(currentSleep);
           }
 
           currentSleep = null;
         }
 
-        // Начинаем новое бодрствование
         currentAwake = {
           id: event.id,
           startedAt: event.timestamp,
@@ -84,14 +89,12 @@ export function rebuildSessions(
     }
   }
 
+  // Незавершённые сессии
   if (currentSleep) {
     sleepSessions.push(currentSleep);
   }
 
-  if (
-    currentAwake &&
-    currentAwake.endedAt === null
-  ) {
+  if (currentAwake) {
     awakeSessions.push(currentAwake);
   }
 
