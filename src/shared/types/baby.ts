@@ -1,4 +1,4 @@
-export type BabyStatus = "awake" | "sleeping";
+export type BabyStatus = "idle" | "awake" | "sleeping";
 
 export interface SleepSession {
   id: number;

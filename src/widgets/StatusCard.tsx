@@ -1,38 +1,42 @@
-import { Moon, Sun} from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 
 import useStatusCard from "../shared/hooks/useStatusCard";
 
 export default function StatusCard() {
-  const { sleeping, duration, startedAtLabel } = useStatusCard();
+  const { sleeping, idle, duration, startedAtLabel } = useStatusCard();
+
+  if (idle) {
+    return (
+      <section className="rounded-[32px] bg-slate-900 p-6 shadow-xl">
+        <div className="flex flex-col items-center text-center">
+          <h2 className="mt-4 text-3xl font-bold">Начните отслеживание</h2>
+
+          <p className="mt-6 max-w-xs text-lg text-slate-300">
+            Выберите действие ниже
+            <br />
+            или добавьте событие вручную.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="rounded-[32px] bg-slate-900 p-6 shadow-xl">
-      
-
-      <div className="flex flex flex-col items-center">
+      <div className="flex flex-col items-center">
         {sleeping ? (
-          <Moon
-            size={64}
-            className="text-indigo-400"
-          />
+          <Moon size={64} className="text-indigo-400" />
         ) : (
-          <Sun
-            size={64}
-            className="text-yellow-400"
-          />
+          <Sun size={64} className="text-yellow-400" />
         )}
 
         <h2 className="mt-4 text-3xl font-bold">
           {sleeping ? "Спит" : "Бодрствует"}
         </h2>
 
-        <div className="mt-6 text-5xl font-bold">
-          {duration}
-        </div>
+        <div className="mt-6 text-5xl font-bold">{duration}</div>
 
-        <div className="mt-4 text-slate-400">
-          {startedAtLabel}
-        </div>
+        <div className="mt-4 text-slate-400">{startedAtLabel}</div>
       </div>
     </section>
   );

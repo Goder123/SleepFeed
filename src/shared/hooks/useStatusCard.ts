@@ -10,19 +10,23 @@ export default function useStatusCard() {
   const now = useNow();
 
   const sleeping = status === "sleeping";
+  const idle = status === "idle";
 
   const startedAt = sleeping ? sleepStartedAt : awakeStartedAt;
+
   const duration =
-  startedAt !== null
-    ? formatDuration(Math.max(0, now - startedAt))
-    : "00:00:00";
+    startedAt != null
+      ? formatDuration(Math.max(0, now - startedAt))
+      : "00:00:00";
 
   return {
+    status,
     sleeping,
+    idle,
     duration,
     startedAt,
     startedAtLabel: startedAt
       ? `С ${formatClock(startedAt)}`
-      : "—",
+      : "",
   };
 }

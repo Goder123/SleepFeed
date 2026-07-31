@@ -29,15 +29,17 @@ interface BabyState {
   startSleep: () => void;
   wakeUp: () => void;
   feed: () => void;
+  addEvent: (event: BabyEvent) => void;
 
   deleteEvent: (id: number) => void;
+  updateEvent: (event: BabyEvent) => void;
 
   updateProfile: (data: Partial<BabyProfile>) => void;
 }
 
 function buildStateFromEvents(
   events: BabyEvent[],
-  now: number
+  now: number,
 ): Pick<
   BabyState,
   | "status"
@@ -48,14 +50,8 @@ function buildStateFromEvents(
 > {
   const { sleepSessions, awakeSessions } = rebuildSessions(events, now);
 
-  const openSleep = sleepSessions.find(
-    (session) => session.endedAt === null
-  );
-
-  const openAwake = awakeSessions.find(
-    (session) => session.endedAt === null
-  );
-  
+  const openSleep = sleepSessions.find((session) => session.endedAt === null);
+  const openAwake = awakeSessions.find((session) => session.endedAt === null);
 
   if (openSleep) {
     return {
@@ -67,14 +63,20 @@ function buildStateFromEvents(
     };
   }
 
-  
-  
-  
+  if (openAwake) {
+    return {
+      status: "awake",
+      sleepStartedAt: null,
+      awakeStartedAt: openAwake.startedAt,
+      sleepSessions,
+      awakeSessions,
+    };
+  }
 
-return {
-    status: "awake",
+  return {
+    status: "idle",
     sleepStartedAt: null,
-    awakeStartedAt: openAwake?.startedAt ?? now,
+    awakeStartedAt: null,
     sleepSessions,
     awakeSessions,
   };
@@ -83,10 +85,10 @@ return {
 export const useBabyStore = create<BabyState>()(
   persist(
     (set) => ({
-      status: "awake",
+      status: "idle",
 
       sleepStartedAt: null,
-      awakeStartedAt: Date.now(),
+      awakeStartedAt: null,
 
       lastFeedAt: null,
 
@@ -103,32 +105,27 @@ export const useBabyStore = create<BabyState>()(
       awakeSessions: [],
 
       startSleep: () => {
-  
+        const now = Date.now();
 
-  const now = Date.now();
+        set((state) => {
+          const events: BabyEvent[] = [
+            {
+              id: now,
+              type: "sleep",
+              title: "Уснул",
+              timestamp: now,
+            },
+            ...state.events,
+          ];
 
-  set((state) => {
-    
-
-    const events: BabyEvent[] = [
-      {
-        id: now,
-        type: "sleep",
-        title: "Уснул",
-        timestamp: now,
+          return {
+            events,
+            ...buildStateFromEvents(events, now),
+          };
+        });
       },
-      ...state.events,
-    ];
 
-
-    return {
-      events,
-      ...buildStateFromEvents(events, now),
-    };
-  });
-},
-      
-            wakeUp: () => {
+      wakeUp: () => {
         const now = Date.now();
 
         set((state) => {
@@ -142,11 +139,10 @@ export const useBabyStore = create<BabyState>()(
             ...state.events,
           ];
 
-          const result = {
-  events,
-  ...buildStateFromEvents(events, now),
-};
-return result;
+          return {
+            events,
+            ...buildStateFromEvents(events, now),
+          };
         });
       },
 
@@ -167,14 +163,45 @@ return result;
           ],
         }));
       },
+      addEvent: (event: BabyEvent) => {
+        set((state) => {
+          const now = Date.now();
+
+          const events = [event, ...state.events].sort(
+            (a, b) => b.timestamp - a.timestamp,
+          );
+
+          return {
+            events,
+            lastFeedAt:
+              event.type === "feed" ? event.timestamp : state.lastFeedAt,
+            ...buildStateFromEvents(events, now),
+          };
+        });
+      },
 
       deleteEvent: (id: number) => {
         set((state) => {
           const now = Date.now();
 
-          const events = state.events.filter(
-            (event) => event.id !== id
-          );
+          const events = state.events.filter((event) => event.id !== id);
+
+          return {
+            events,
+            ...buildStateFromEvents(events, now),
+          };
+        });
+      },
+
+      updateEvent: (updatedEvent: BabyEvent) => {
+        set((state) => {
+          const now = Date.now();
+
+          const events = state.events
+            .map((event) =>
+              event.id === updatedEvent.id ? updatedEvent : event,
+            )
+            .sort((a, b) => b.timestamp - a.timestamp);
 
           return {
             events,
@@ -210,6 +237,6 @@ return result;
         sleepSessions: state.sleepSessions,
         awakeSessions: state.awakeSessions,
       }),
-    }
-  )
+    },
+  ),
 );
