@@ -74,6 +74,13 @@ export function buildTimeline(
       grouped.set(date, [item]);
     }
   }
+  console.table(
+  items.map((item) => ({
+    id: item.id,
+    type: item.type,
+    title: item.title,
+  })),
+);
 
   return Array.from(grouped.entries()).map(([date, items]) => ({
     date,

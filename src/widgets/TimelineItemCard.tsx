@@ -43,8 +43,20 @@ export default function TimelineItemCard({
 }: TimelineItemCardProps) {
   const isFeed = item.type === "feed";
 
-  const currentStyle = styles[item.type];
-  const Icon = currentStyle.icon;
+  console.log("TimelineItemCard:", item);
+
+const currentStyle = styles[item.type];
+
+if (!currentStyle) {
+  console.error("Unknown type:", item.type);
+  return (
+    <div className="bg-red-500 p-4 text-white">
+      Unknown type: {String(item.type)}
+    </div>
+  );
+}
+
+const Icon = currentStyle.icon;
 
   return (
     <button
