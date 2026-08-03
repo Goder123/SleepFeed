@@ -1,4 +1,4 @@
-
+import { useNavigate } from "react-router-dom";
 
 import { buildTimeline } from "../shared/lib/timeline";
 import { useBabyStore } from "../store/babyStore";
@@ -6,7 +6,7 @@ import { useBabyStore } from "../store/babyStore";
 import TimelineItemCard from "./TimelineItemCard";
 
 export default function Timeline() {
- 
+  const navigate = useNavigate();
 
   const events = useBabyStore((state) => state.events);
   const sleepSessions = useBabyStore((state) => state.sleepSessions);
@@ -22,10 +22,6 @@ export default function Timeline() {
     .flatMap((day) => day.items)
     .slice(0, 5);
 
-  function handleOpenHistory() {
-  window.location.href = "/history";
-}
-
   return (
     <section className="mt-8">
       <div className="mb-4 flex items-center justify-between">
@@ -35,7 +31,7 @@ export default function Timeline() {
 
         <button
           type="button"
-          onClick={handleOpenHistory}
+          onClick={() => navigate("/history")}
           className="text-sm font-medium text-indigo-400 transition-colors hover:text-indigo-300"
         >
           Все →
