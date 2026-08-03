@@ -1,18 +1,35 @@
 @import "tailwindcss";
 
+html {
+  scroll-behavior: auto;
+  overflow-anchor: none;
+}
+
+body {
+  overflow-anchor: none;
+}
 html,
 body,
 #root {
   width: 100%;
-  min-height: 100%;
+  height: 100%;
+}
+
+
+html {
+  overflow-y: scroll;
 }
 
 body {
   margin: 0;
+  overflow-x: hidden;
+
   font-family: Inter, system-ui, sans-serif;
-  background-color: #0f172a;
+
+  background: #0f172a;
   color: white;
 }
+
 /* ---------- Date & Time Inputs ---------- */
 
 input[type="date"],
@@ -37,4 +54,19 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 input[type="date"]::-webkit-calendar-picker-indicator:hover,
 input[type="time"]::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
+}
+
+.animate-modal {
+  animation: modalIn 220ms ease;
+}
+
+/* WheelPicker */
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

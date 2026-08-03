@@ -31,6 +31,7 @@ export function buildTimeline(
       type: "feed",
       title: event.title,
       start: event.timestamp,
+      sourceEvent: event,
     });
   }
 

@@ -24,7 +24,7 @@ export default function Header({
   const { sleeping } = useStatusCard();
 
   return (
-    <header className="sticky top-0 z-50 bg-slate-950/80 px-4 pt-3 pb-2 backdrop-blur-md">
+    <header className="sticky top-0 z-50 mb-4 bg-slate-950/80 px-4 pt-3 pb-2 backdrop-blur-md">
       <div className="mx-auto max-w-[430px]">
         <div className="rounded-[28px] border border-slate-800 bg-slate-900 px-5 py-4 shadow-xl">
           <div className="flex items-center">

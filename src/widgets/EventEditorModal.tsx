@@ -44,8 +44,7 @@ export default function EventEditorModal({
           feed: "Редактировать кормление",
         }[type];
 
-  const toTimestamp = (time: string) =>
-    new Date(`${date}T${time}`).getTime();
+  const toTimestamp = (time: string) => new Date(`${date}T${time}`).getTime();
 
   const handleSave = () => {
     if (mode !== "add") {
@@ -97,11 +96,7 @@ export default function EventEditorModal({
   };
 
   return (
-    <Modal
-      open={open}
-      title={title}
-      onClose={onClose}
-    >
+    <Modal open={open} title={title} onClose={onClose}>
       <div className="space-y-5">
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">

@@ -1,107 +1,192 @@
-import { X, Moon, Sun, Milk } from "lucide-react";
+import { useEffect } from "react";
+import { X } from "lucide-react";
 
-import type { EventType } from "../shared/types/events";
+import { useBabyStore } from "../store/babyStore";
+
+import type { EditingItem } from "../shared/types/editing";
+import type { BabyEvent, EventType } from "../shared/types/events";
+
+import EventEditor from "./EventEditor/EventEditor";
 
 interface AddEditEventModalProps {
   isOpen: boolean;
+  editingItem?: EditingItem;
+  initialType?: EventType;
   onClose: () => void;
 }
 
-const eventTypes: {
-  type: EventType;
-  title: string;
-  description: string;
-  icon: typeof Moon;
-}[] = [
-  {
-    type: "sleep",
-    title: "Сон",
-    description: "Добавить начало сна",
-    icon: Moon,
-  },
-  {
-    type: "wake",
-    title: "Бодрствование",
-    description: "Добавить пробуждение",
-    icon: Sun,
-  },
-  {
-    type: "feed",
-    title: "Кормление",
-    description: "Добавить кормление",
-    icon: Milk,
-  },
-];
+const HEADER_HEIGHT = 64;
 
 export default function AddEditEventModal({
   isOpen,
+  editingItem,
+  initialType,
   onClose,
 }: AddEditEventModalProps) {
+  const addEvent = useBabyStore((state) => state.addEvent);
+
+  const updateEvent = useBabyStore((state) => state.updateEvent);
+
+  const deleteEvent = useBabyStore((state) => state.deleteEvent);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+
+    document.body.style.overflow = "hidden";
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) {
     return null;
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-[430px] rounded-t-[32px] border border-slate-800 bg-slate-900 p-6 shadow-2xl">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-white">
-              Добавить событие
-            </h2>
+  function handleSubmit(events: BabyEvent[]) {
+    events.forEach((event) => {
+      const exists =
+        editingItem &&
+        (editingItem.type === "feed"
+          ? editingItem.event.id === event.id
+          : editingItem.type === "sleep"
+            ? editingItem.sleepEvent.id === event.id ||
+              editingItem.wakeEvent?.id === event.id
+            : editingItem.wakeEvent.id === event.id);
 
-            <p className="mt-1 text-sm text-slate-400">
-              Выберите тип события
-            </p>
+      if (exists) {
+        updateEvent(event);
+      } else {
+        addEvent(event);
+      }
+    });
+
+    onClose();
+  }
+
+  function handleDelete() {
+    if (!editingItem) {
+      return;
+    }
+
+    if (editingItem.type === "feed") {
+      deleteEvent(editingItem.event.id);
+    }
+
+    if (editingItem.type === "sleep") {
+      deleteEvent(editingItem.sleepEvent.id);
+
+      if (editingItem.wakeEvent) {
+        deleteEvent(editingItem.wakeEvent.id);
+      }
+    }
+
+    if (editingItem.type === "awake") {
+      deleteEvent(editingItem.wakeEvent.id);
+    }
+
+    onClose();
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        onClick={(event) => event.stopPropagation()}
+        className="absolute inset-x-0 flex justify-center px-4"
+        style={{
+          top: HEADER_HEIGHT,
+        }}
+      >
+        <div
+          className="
+            animate-modal
+            mx-4
+            w-full
+            max-w-[420px]
+            overflow-hidden
+            rounded-t-[36px]
+            bg-[#161E33]
+            shadow-[0_-20px_60px_rgba(0,0,0,.45)]
+            ring-1
+            ring-slate-700/40
+          "
+          style={{
+            maxHeight: `calc(100vh - ${HEADER_HEIGHT}px)`,
+          }}
+        >
+          <div className="flex justify-center pt-1">
+            <div className="h-1.5 w-12 rounded-full bg-slate-600" />
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full p-2 text-slate-400 transition hover:bg-slate-800 hover:text-white"
+          <div className="flex items-center justify-between px-6 pb-4 pt-1">
+            <div>
+              <h2 className="text-[32px] font-bold tracking-tight text-white">
+                {editingItem ? "Редактировать событие" : "Добавить событие"}
+              </h2>
+
+              <p className="mt-1 text-[15px] text-slate-400">
+                Заполните данные события
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="
+                flex
+                h-10
+                w-10
+                items-center
+                justify-center
+                rounded-full
+                bg-slate-800/60
+                text-slate-400
+                transition
+                hover:bg-slate-700
+                hover:text-white
+              "
+            >
+              <X size={22} />
+            </button>
+          </div>
+
+          <div
+            className="
+              max-h-[calc(100vh-210px)]
+              overflow-y-auto
+              px-6
+              pb-8
+              scrollbar-thin
+              scrollbar-thumb-slate-700
+              scrollbar-track-transparent
+            "
           >
-            <X size={22} />
-          </button>
+            <EventEditor
+              editingItem={editingItem}
+              initialType={initialType}
+              onSubmit={handleSubmit}
+              onDelete={editingItem ? handleDelete : undefined}
+              onCancel={onClose}
+            />
+          </div>
         </div>
-
-        <div className="space-y-3">
-          {eventTypes.map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <button
-                key={item.type}
-                type="button"
-                className="group flex w-full items-center gap-4 rounded-2xl border border-slate-800 bg-slate-950 p-4 text-left transition hover:border-sky-500/40 hover:bg-slate-900"
-              >
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-sky-500/15">
-                  <Icon
-                    size={22}
-                    className="text-sky-400"
-                  />
-                </div>
-
-                <div className="flex-1">
-                  <h3 className="font-semibold text-white">
-                    {item.title}
-                  </h3>
-
-                  <p className="mt-1 text-sm text-slate-400">
-                    {item.description}
-                  </p>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        <button
-          type="button"
-          onClick={onClose}
-          className="mt-6 w-full rounded-2xl bg-slate-800 py-3 font-medium text-white transition hover:bg-slate-700"
-        >
-          Отмена
-        </button>
       </div>
     </div>
   );

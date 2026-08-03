@@ -19,7 +19,9 @@ export function formatDuration(
   const minutes = totalMinutes % 60;
 
   if (hours > 0) {
-    return `${hours} ч ${minutes} мин`;
+    return minutes > 0
+      ? `${hours} ч ${minutes} мин`
+      : `${hours} ч`;
   }
 
   return `${minutes} мин`;
@@ -30,12 +32,12 @@ export function getTimelineItemTitle(
 ): string {
   switch (type) {
     case "sleep":
-      return "💤 Сон";
+      return "Сон";
 
     case "awake":
-      return "☀️ Бодрствование";
+      return "Бодрствование";
 
     case "feed":
-      return "🍼 Кормление";
+      return "Кормление";
   }
 }

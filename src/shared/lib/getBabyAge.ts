@@ -4,8 +4,7 @@ export function getBabyAge(birthDate: string): string {
 
   let years = today.getFullYear() - birth.getFullYear();
   let months = today.getMonth() - birth.getMonth();
-  let days = today.getDate() - birth.getDate();
-
+  const days = today.getDate() - birth.getDate();
   if (days < 0) {
     months--;
   }
@@ -34,16 +33,11 @@ export function getBabyAge(birthDate: string): string {
     months,
     "месяц",
     "месяца",
-    "месяцев"
+    "месяцев",
   )}`;
 }
 
-function plural(
-  value: number,
-  one: string,
-  few: string,
-  many: string
-): string {
+function plural(value: number, one: string, few: string, many: string): string {
   const mod10 = value % 10;
   const mod100 = value % 100;
 

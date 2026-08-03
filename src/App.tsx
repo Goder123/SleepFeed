@@ -1,19 +1,30 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  Route,
+} from "react-router-dom";
 
-import HistoryPage from "./pages/HistoryPage";
 import HomePage from "./pages/HomePage";
+import HistoryPage from "./pages/HistoryPage";
 import SettingsPage from "./pages/SettingsPage";
 
-function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/history" element={<HistoryPage />} />
-      </Routes>
-    </BrowserRouter>
-  );
-}
+export const router = createBrowserRouter(
+  createRoutesFromElements(
+    <>
+      <Route
+        path="/"
+        element={<HomePage />}
+      />
 
-export default App;
+      <Route
+        path="/history"
+        element={<HistoryPage />}
+      />
+
+      <Route
+        path="/settings"
+        element={<SettingsPage />}
+      />
+    </>,
+  ),
+);

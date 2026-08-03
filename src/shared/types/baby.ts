@@ -1,9 +1,8 @@
 export type BabyStatus = "idle" | "awake" | "sleeping";
 
-export interface SleepSession {
+interface BaseSession {
   id: number;
 
-  type: "sleep";
   title: string;
 
   startedAt: number;
@@ -12,16 +11,12 @@ export interface SleepSession {
   duration?: number;
 }
 
-export interface AwakeSession {
-  id: number;
+export interface SleepSession extends BaseSession {
+  type: "sleep";
+}
 
+export interface AwakeSession extends BaseSession {
   type: "awake";
-  title: string;
-
-  startedAt: number;
-  endedAt: number | null;
-
-  duration?: number;
 }
 
 export interface FeedEvent {
