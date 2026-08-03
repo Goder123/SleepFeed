@@ -34,7 +34,7 @@ export function getTimelineItemTitle(
     case "sleep":
       return "Сон";
 
-    case "awake":
+    case "wake":
       return "Бодрствование";
 
     case "feed":

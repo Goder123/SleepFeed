@@ -25,11 +25,11 @@ const styles = {
     iconBg: "bg-indigo-500/15",
     iconColor: "text-indigo-400",
   },
-  awake: {
-    icon: Sun,
-    iconBg: "bg-amber-500/15",
-    iconColor: "text-amber-400",
-  },
+  wake: {
+  icon: Sun,
+  iconBg: "bg-amber-500/15",
+  iconColor: "text-amber-400",
+},
   feed: {
     icon: Milk,
     iconBg: "bg-emerald-500/15",

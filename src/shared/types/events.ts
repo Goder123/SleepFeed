@@ -37,14 +37,14 @@ export interface BabyEvent {
 
 export type TimelineItemType =
   | "sleep"
-  | "awake"
+  | "wake"
   | "feed";
 
 
 export type TimelineFilter =
   | "all"
   | "sleep"
-  | "awake"
+  | "wake"
   | "feed";
 
 

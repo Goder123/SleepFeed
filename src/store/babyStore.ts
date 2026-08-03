@@ -64,7 +64,7 @@ function buildStateFromEvents(
 
   if (openAwake) {
     return {
-      status: "awake",
+      status: "wake",
       sleepStartedAt: null,
       awakeStartedAt: openAwake.startedAt,
       sleepSessions,
@@ -136,7 +136,7 @@ export const useBabyStore = create<BabyState>()(
         const now = Date.now();
 
         set((state) => {
-          if (state.status === "awake") {
+          if (state.status === "wake") {
             return state;
           }
 

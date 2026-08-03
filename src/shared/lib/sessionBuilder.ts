@@ -70,7 +70,7 @@ export function rebuildSessions(events: BabyEvent[]): SessionResult {
 
         currentAwake = {
           id: event.id,
-          type: "awake",
+          type: "wake",
           title: event.title,
           startedAt: event.timestamp,
           endedAt: null,
